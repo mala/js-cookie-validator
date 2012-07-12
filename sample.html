@@ -1,0 +1,37 @@
+
+<script src="./cookie_validator.js"></script>
+<script>
+	console = {};
+	console.log = function(){
+		document.getElementById("log").value += Array.prototype.slice.call(arguments, 0) + "\n";
+	}
+</script>
+<style>
+	textarea{
+		width:100%;
+		height: 200px;
+	}
+</style>
+<body>
+<h2>set rule</h2>
+<textarea id="rule">
+var force_path = "/hoge/"
+CookieValidator.configure({
+  debug: true,
+  default_path: force_path
+});
+CookieValidator.set_rule("path", function(key, val){
+  if (val.indexOf(force_path) !== 0) {
+    return [key, force_path];
+  }
+});
+CookieValidator.on();
+</textarea>
+<button onclick="eval(document.getElementById('rule').value)">set_rule</button>
+<hr>
+<input type="text" value="hoge=12345; expires=Tue, 31-Dec-2030 23:59:59;" id="cookie" size="80">
+<button onclick="document.cookie=document.getElementById('cookie').value">set cookie</button>
+
+<h2>log</h2>
+<textarea id="log"></textarea>
+</body>
