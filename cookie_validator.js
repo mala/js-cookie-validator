@@ -5,20 +5,16 @@
 var CookieValidator = (function(document){
 	"use strict";
 	// default config
-	var config = {
-		autoreload: true,
-		reload_interval: 5000
-	};
+	var config = {};
 	var trim = function(s){ return s.replace(/^\s|\s$/g, "") };
 
-	var cookie = document.cookie;
-	var getter = function(){ return cookie };
-	var reload_cookie = function(){
+	var getter = function(){
 		delete document.cookie;
-		cookie = document.cookie;
+		var cookie = document.cookie;
 		set_setter();
+		return cookie;
 	};
-	
+
 	var custom_validator = {};
 	var validator = function(key, val, cookie_name, cookie_value) {
 		var res;
@@ -73,19 +69,15 @@ var CookieValidator = (function(document){
 			}
 		}
 	
+		delete document.cookie;
 		if (rewrite_flag) {
 			if (config.debug) console.log(new_cookie);
-			delete document.cookie;
 			document.cookie = new_cookie.join(";");
-			reload_cookie();
-			return new_cookie.join(";");
 		} else {
 			if (config.debug) console.log(orig_cookie);
-			delete document.cookie;
 			document.cookie = orig_cookie;
-			reload_cookie();
-			return orig_cookie;
 		}
+		set_setter()
 	};
 	var set_setter = function() {
 		try{
@@ -95,13 +87,6 @@ var CookieValidator = (function(document){
 			});
 		} catch(e){ /* not supported */ }
 	};
-	var timer_id;
-	var start_reload = function(){
-		if (config.autoreload) {
-			timer_id = setInterval(reload_cookie, config.reload_interval)
-		}
-	};
-	var stop_reload = function(){ clearInterval(timer_id) };
 	
 	return {
 		configure: function(options){
@@ -109,8 +94,9 @@ var CookieValidator = (function(document){
 				config[key] = options[key];
 			}
 		},
+		isSupported: !!Object.defineProperty,
 		set_rule: function(key, func){ custom_validator[key] = func },
-		on: function(){ set_setter(); start_reload() },
-		off: function(){ delete document.cookie; stop_reload() }
+		on: function(){ set_setter()  },
+		off: function(){ delete document.cookie }
 	}
 })(document);
